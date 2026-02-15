@@ -1,0 +1,4 @@
+fastapi
+gradio_client
+pydantic
+python-multipart

@@ -1,0 +1,31 @@
+.idea/
+.env/
+.venv/
+.pbix
+
+
+# Large / generated files
+5. Visualization/Dashboard.pbix
+6. Sentimenter/sentiment_model_local/
+
+
+# Large files
+
+6. Sentiment Score Generator/sentiment_model_local/
+
+# Python
+__pycache__/
+*.pyc
+
+# Notebooks
+*.ipynb_checkpoints/
+
+# Large models
+sentiment_model_local/
+*.bin
+*.pt
+
+# Office / dashboards
+*.docx
+*.rtf
+*.pbix

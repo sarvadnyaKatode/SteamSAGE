@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SteamSAGE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg1:#1b2838;
+  --bg2:#171a21;
+  --card: rgba(42,71,94,0.55);
+  --accent:#66c0f4;
+  --accent2:#4fc3f7;
+  --text:#c7d5e0;
+  --muted:#9fd3ff;
+  --border: rgba(102,192,244,0.15);
+}
+
+body {
+  margin: 0;
+  font-family: system-ui;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2));
+  color: var(--text);
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 40px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 2.4rem;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.subtitle{
+  text-align:center;
+  opacity:.75;
+  margin-bottom: 26px;
+}
+
+.search {
+  margin-top: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+}
+
+.controls{
+  margin-top: 18px;
+  display:flex;
+  align-items:center;
+  gap: 14px;
+}
+
+.controls label{
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 75px;
+}
+
+.controls input[type="range"]{
+  width: 100%;
+}
+
+.controls .count{
+  width: 40px;
+  text-align:right;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px;
+  background: var(--accent2);
+  border: none;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status {
+  margin-top: 12px;
+  font-size: 0.95rem;
+  color: var(--muted);
+  min-height: 22px;
+}
+
+.grid {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: rgba(42,71,94,0.5);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(102,192,244,0.15);
+
+  display: flex;
+  flex-direction: column;
+}
+
+
+.card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
+.card img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  background: #111;
+}
+
+.content {
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+
+.title {
+  font-weight: 900;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.score {
+  background: var(--accent);
+  color: var(--bg1);
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  margin-bottom: 10px;
+  font-weight: 900;
+}
+
+.meta {
+  font-size: 0.9rem;
+  color: #a8b5c2;
+  margin-bottom: 10px;
+}
+
+.desc {
+  font-size: 0.92rem;
+  color: var(--text);
+  opacity: 0.9;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+.reason {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;   
+  padding-top: 12px;  
+}
+
+
+.actions a {
+  flex: 1;
+  text-align: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 900;
+  font-size: 0.92rem;
+}
+
+.actions a.primary {
+  background: var(--accent2);
+  color: var(--bg1);
+}
+
+.actions a.secondary {
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+}
+
+/* 
+   MODAL
+ */
+
+.modalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding: 20px;
+  z-index: 9999;
+}
+
+.modal{
+  width: min(1100px, 96vw);
+  max-height: 92vh;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(18,22,28,.92);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  display:flex;
+  flex-direction: column;
+}
+
+.modalHeader{
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.modalTitle{
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: #fff;
+  margin-right: 12px;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.closeBtn{
+  border:none;
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  font-weight: 900;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor:pointer;
+  width: fit-content;
+}
+
+.modalBody{
+  display:grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  overflow:auto;
+}
+
+@media (max-width: 900px){
+  .modalBody{
+    grid-template-columns: 1fr;
+  }
+}
+
+.gallery{
+  position: relative;
+  border-radius: 14px;
+  overflow:hidden;
+  border: 1px solid rgba(255,255,255,.08);
+  background: #0b0f14;
+}
+
+.gallery img{
+  width: 100%;
+  height: 520px;
+  object-fit: cover;
+  display:block;
+}
+
+@media (max-width: 900px){
+  .gallery img{
+    height: 320px;
+  }
+}
+
+
+
+.navBtn{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  
+  width: 46px;
+  height: 46px;
+  padding: 0;
+
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.55);
+  color: #fff;
+
+  font-size: 20px;
+  font-weight: 900;
+
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+
+  display: grid;
+  place-items: center;
+
+  transition: 0.2s ease;
+}
+
+.navBtn:hover{
+  background: rgba(0,0,0,.75);
+  transform: translateY(-50%) scale(1.05);
+  border-color: rgba(102,192,244,.55);
+  color: var(--accent2);
+}
+
+.navBtn:active{
+  transform: translateY(-50%) scale(0.96);
+}
+
+.navBtn.left{ right: 14px; }
+.navBtn.right{ left: 14px; }
+
+
+.dots{
+  position:absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 12px;
+  display:flex;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(0,0,0,.35);
+  border-radius: 999px;
+}
+
+.dot{
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.25);
+  cursor:pointer;
+}
+
+.dot.active{
+  background: var(--accent2);
+}
+
+.details{
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  padding: 14px;
+  background: rgba(255,255,255,.03);
+}
+
+.details .line{
+  margin: 8px 0;
+  opacity: .92;
+}
+
+.details strong{
+  color: #fff;
+}
+
+.details a{
+  color: var(--accent2);
+  font-weight: 900;
+  text-decoration:none;
+}
+
+.details a:hover{ text-decoration: underline; }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div>
+    <center>
+      <h1>🎮 SteamSAGE</h1>
+      <h3>Search Games in your style...</h3>
+    </center>
+    
+  </div>
+  
+  
+  <div class="search">
+    <input id="query" placeholder="e.g. open world survival crafting game">
+
+    <div class="controls">
+      <label>Results:</label>
+      <input id="topk" type="range" min="1" max="20" value="10">
+      <div class="count" id="topkVal">10</div>
+    </div>
+
+    <button id="btn">Find Games</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="grid" id="results"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modalOverlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modalHeader">
+      
+      <div class="modalTitle" id="modalTitle">Game</div>
+      <button class="closeBtn" id="closeModal">Close ✕</button>
+    </div>
+
+    <div class="modalBody">
+      <div class="gallery" id="gallery">
+        <button class="navBtn left" id="nextBtn">⟶</button>
+        <img id="galleryImg" src="" alt="Screenshot">
+        <button class="navBtn right" id="prevBtn">⟵</button>
+
+        <div class="dots" id="dots"></div>
+      </div>
+
+      <div class="details" id="detailsBox"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const btn = document.getElementById("btn");
+const queryInput = document.getElementById("query");
+const statusEl = document.getElementById("status");
+const resultsEl = document.getElementById("results");
+
+const topk = document.getElementById("topk");
+const topkVal = document.getElementById("topkVal");
+
+topk.addEventListener("input", () => {
+  topkVal.textContent = topk.value;
+});
+
+function formatPrice(price, currency) {
+  if (price == null) return "";
+  if (price === 0) return "Free";
+  return `${price} ${currency || ""}`.trim();
+}
+
+function safeText(s){
+  return (s ?? "").toString();
+}
+
+/* 
+   MODAL / GALLERY LOGIC
+ */
+const modalOverlay = document.getElementById("modalOverlay");
+const closeModalBtn = document.getElementById("closeModal");
+const modalTitle = document.getElementById("modalTitle");
+const galleryImg = document.getElementById("galleryImg");
+const dotsEl = document.getElementById("dots");
+const detailsBox = document.getElementById("detailsBox");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+
+let currentGame = null;
+let currentIndex = 0;
+
+function openModal(game){
+  currentGame = game;
+  currentIndex = 0;
+
+  modalTitle.textContent = game.name || "Game";
+
+  // screenshots fallback: if none, use header_image
+  const shots = Array.isArray(game.screenshots) && game.screenshots.length
+    ? game.screenshots
+    : (game.header_image ? [game.header_image] : []);
+
+  currentGame.__shots = shots;
+
+  renderGallery();
+  renderDetails();
+
+  modalOverlay.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal(){
+  modalOverlay.style.display = "none";
+  document.body.style.overflow = "auto";
+  currentGame = null;
+}
+
+function renderGallery(){
+  const shots = currentGame.__shots || [];
+  if (!shots.length){
+    galleryImg.src = "https://via.placeholder.com/1280x720?text=No+Screenshots";
+    dotsEl.innerHTML = "";
+    prevBtn.style.display = "none";
+    nextBtn.style.display = "none";
+    return;
+  }
+
+  // clamp index
+  if (currentIndex < 0) currentIndex = shots.length - 1;
+  if (currentIndex >= shots.length) currentIndex = 0;
+
+  galleryImg.src = shots[currentIndex];
+
+  // show/hide nav
+  prevBtn.style.display = shots.length > 1 ? "block" : "none";
+  nextBtn.style.display = shots.length > 1 ? "block" : "none";
+
+  // dots
+  dotsEl.innerHTML = shots.slice(0, 12).map((_, i) => `
+    <div class="dot ${i === currentIndex ? "active" : ""}" data-i="${i}"></div>
+  `).join("");
+}
+
+function renderDetails(){
+  const g = currentGame;
+
+  const score = ((g.similarity_score || 0) * 100).toFixed(1);
+  const price = formatPrice(g.price, g.currency);
+  const genre = g.primary_genre || "";
+  const sentiment = (g.avg_sentiment_score != null) ? g.avg_sentiment_score.toFixed(2) : "";
+  const desc = safeText(g.short_description || g.description).trim();
+
+  detailsBox.innerHTML = `
+    <div class="line"><strong>Match:</strong> ${score}%</div>
+    ${price ? `<div class="line"><strong>Price:</strong> ${price}</div>` : ""}
+    ${genre ? `<div class="line"><strong>Genre:</strong> ${genre}</div>` : ""}
+    ${sentiment ? `<div class="line"><strong>Sentiment:</strong> ⭐ ${sentiment}</div>` : ""}
+    ${desc ? `<div class="line"><strong>Description:</strong><br>${desc}</div>` : ""}
+    ${g.steam_url ? `<div class="line"><strong>Steam:</strong> <a href="${g.steam_url}" target="_blank">${g.steam_url}</a></div>` : ""}
+    <div class="line" style="margin-top:12px;">
+      <a href="https://www.youtube.com/results?search_query=${encodeURIComponent((g.name||"") + " gameplay")}" target="_blank">
+        Search gameplay on YouTube →
+      </a>
+    </div>
+  `;
+}
+
+prevBtn.addEventListener("click", () => {
+  currentIndex--;
+  renderGallery();
+});
+
+nextBtn.addEventListener("click", () => {
+  currentIndex++;
+  renderGallery();
+});
+
+dotsEl.addEventListener("click", (e) => {
+  const dot = e.target.closest(".dot");
+  if (!dot) return;
+  currentIndex = Number(dot.dataset.i);
+  renderGallery();
+});
+
+closeModalBtn.addEventListener("click", closeModal);
+
+modalOverlay.addEventListener("click", (e) => {
+  if (e.target === modalOverlay) closeModal();
+});
+
+// keyboard support
+document.addEventListener("keydown", (e) => {
+  if (modalOverlay.style.display !== "flex") return;
+
+  if (e.key === "Escape") closeModal();
+  if (e.key === "ArrowLeft") { currentIndex--; renderGallery(); }
+  if (e.key === "ArrowRight") { currentIndex++; renderGallery(); }
+});
+
+// swipe support (mobile)
+let touchStartX = null;
+galleryImg.addEventListener("touchstart", (e) => {
+  touchStartX = e.touches[0].clientX;
+}, {passive:true});
+
+galleryImg.addEventListener("touchend", (e) => {
+  if (touchStartX == null) return;
+  const endX = e.changedTouches[0].clientX;
+  const dx = endX - touchStartX;
+  touchStartX = null;
+
+  if (Math.abs(dx) < 40) return;
+  if (dx > 0) currentIndex--;
+  else currentIndex++;
+  renderGallery();
+}, {passive:true});
+
+/*
+   SEARCH LOGIC
+ */
+
+async function runSearch() {
+  const query = queryInput.value.trim();
+  if (!query) return;
+
+  btn.disabled = true;
+  statusEl.textContent = "🔍 Searching…";
+  resultsEl.innerHTML = "";
+
+  try {
+    const res = await fetch("/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, top_k: Number(topk.value) })
+    });
+
+    const raw = await res.text();
+    if (!res.ok) throw new Error(raw || "Backend error");
+
+    const data = JSON.parse(raw);
+
+    if (!Array.isArray(data) || data.length === 0) {
+      statusEl.textContent = "No results found.";
+      return;
+    }
+
+    statusEl.textContent = `Found ${data.length} games`;
+
+    resultsEl.innerHTML = data.map((g, idx) => {
+      const score = ((g.similarity_score || 0) * 100).toFixed(1);
+      const price = formatPrice(g.price, g.currency);
+      const genre = g.primary_genre ? `🎭 ${g.primary_genre}` : "";
+      const sentiment = g.avg_sentiment_score != null ? `⭐ ${Number(g.avg_sentiment_score).toFixed(2)}` : "";
+      const desc = safeText(g.short_description || g.description).trim();
+
+      return `
+        <div class="card" data-idx="${idx}">
+          <img src="${g.header_image || 'https://via.placeholder.com/460x215'}">
+          <div class="content">
+            <div class="title">${g.name || "Unknown Game"}</div>
+            <div class="score">${score}% Match</div>
+
+            <div class="meta">
+              ${price ? `💰 ${price}` : ""}
+              ${price && (genre || sentiment) ? " • " : ""}
+              ${genre}
+              ${(genre && sentiment) ? " • " : ""}
+              ${sentiment}
+            </div>
+
+            ${desc ? `<div class="desc">${desc}</div>` : ""}
+
+            ${g.match_reason?.length ? `
+              <div class="reason">Matched: ${g.match_reason.join(", ")}</div>
+            ` : ""}
+
+            <div class="actions" onclick="event.stopPropagation()">
+              ${g.steam_url ? `<a class="primary" href="${g.steam_url}" target="_blank">View on Steam</a>` : ""}
+              <a class="secondary" href="https://www.youtube.com/results?search_query=${encodeURIComponent((g.name||"") + " gameplay")}" target="_blank">Gameplay</a>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    // click card => open modal with screenshots
+    document.querySelectorAll(".card").forEach(card => {
+      card.addEventListener("click", () => {
+        const idx = Number(card.dataset.idx);
+        openModal(data[idx]);
+      });
+    });
+
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = "❌ Backend error. HF Space may be sleeping / down.";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+btn.addEventListener("click", runSearch);
+queryInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") runSearch();
+});
+</script>
+
+</body>
+</html>
