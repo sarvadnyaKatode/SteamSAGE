@@ -212,7 +212,7 @@ bi_applications_capped_df = bi_applications_capped_df.withColumn(
     .otherwise("$60+")
 )
 
-# Writing output to SILVER (Parquet format)
+# Writing output to SILVER (Parquet format in s3)
 bi_applications_capped_df.write.mode("overwrite").parquet(applications_out_parquet)
 
 
