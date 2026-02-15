@@ -174,7 +174,7 @@ jobs:
           done
 
   
-  # PHASE 4: Run Crawler
+  # PHASE 4: Run Crawler on silver
   
   run-crawler:
     name: Run Silver Crawler
