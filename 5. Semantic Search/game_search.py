@@ -150,3 +150,5 @@ with gr.Blocks(title="Steam Semantic Game Search") as demo:
     )
 
 demo.launch()
+
+# To run this code, make sure you have the following files in the same directory:
