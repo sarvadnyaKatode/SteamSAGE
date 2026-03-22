@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SteamSAGE AI 🎮</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg1:#0f172a;
+  --bg2:#020617;
+  --card: rgba(255,255,255,0.05);
+  --accent:#38bdf8;
+  --text:#e2e8f0;
+}
+
+body{
+  margin:0;
+  font-family: system-ui;
+  background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+  color:var(--text);
+}
+
+/* container */
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:40px 20px;
+}
+
+/* header */
+h1{
+  text-align:center;
+  font-size:2.5rem;
+  margin-bottom:5px;
+  background: linear-gradient(90deg,#38bdf8,#818cf8);
+  -webkit-background-clip:text;
+  color:transparent;
+}
+
+.subtitle{
+  text-align:center;
+  opacity:.7;
+  margin-bottom:30px;
+}
+
+/* search */
+.search-box{
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  padding:20px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+input{
+  width:100%;
+  padding:14px;
+  border-radius:10px;
+  border:none;
+  outline:none;
+  font-size:1rem;
+}
+
+/* slider */
+.controls{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:10px;
+}
+
+button{
+  width:100%;
+  margin-top:15px;
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  background: linear-gradient(90deg,#38bdf8,#6366f1);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* loader */
+.loader{
+  display:none;
+  text-align:center;
+  margin-top:20px;
+}
+
+/* grid */
+.grid{
+  margin-top:30px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:20px;
+}
+
+/* card */
+.card{
+  background:var(--card);
+  border-radius:16px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,0.1);
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-5px) scale(1.02);
+}
+
+.card img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+}
+
+.content{
+  padding:15px;
+}
+
+.title{
+  font-weight:900;
+  margin-bottom:6px;
+}
+
+.score{
+  background:var(--accent);
+  color:black;
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:0.8rem;
+}
+
+/* AI box */
+.ai-box{
+  margin-top:25px;
+  padding:18px;
+  border-radius:16px;
+  background: rgba(56,189,248,0.08);
+  border:1px solid rgba(56,189,248,0.2);
+}
+
+.ai-box h3{
+  margin:0;
+  color:var(--accent);
+}
+
+/* button links */
+a{
+  display:inline-block;
+  margin-top:10px;
+  color:var(--accent);
+  text-decoration:none;
+  font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>🎮 SteamSAGE AI</h1>
+  <div class="subtitle">Discover games with AI-powered search</div>
+
+  <div class="search-box">
+    <input id="query" placeholder="Try: open world survival like minecraft">
+
+    <div class="controls">
+      <span>Results:</span>
+      <input id="topk" type="range" min="1" max="20" value="5">
+    </div>
+
+    <button onclick="runSearch()">🚀 Find Games</button>
+  </div>
+
+  <div class="loader" id="loader">⏳ Searching magic...</div>
+
+  <div id="summary"></div>
+  <div class="grid" id="results"></div>
+</div>
+
+<script>
+const API = "https://saravadnya-steam-api-backend.hf.space";
+
+async function runSearch(){
+  const q = document.getElementById("query").value;
+  const k = document.getElementById("topk").value;
+
+  const loader = document.getElementById("loader");
+  loader.style.display = "block";
+
+  const res = await fetch(`${API}/search?query=${encodeURIComponent(q)}&top_k=${k}`);
+  const data = await res.json();
+
+  loader.style.display = "none";
+
+  // summary
+  const summary = document.getElementById("summary");
+  summary.innerHTML = data.global_summary
+    ? `<div class="ai-box"><h3>🧠 AI Insight</h3><p>${data.global_summary}</p></div>`
+    : "";
+
+  // results
+  const results = document.getElementById("results");
+
+  results.innerHTML = data.results.map(g => `
+    <div class="card">
+      <img src="${g.header_image}">
+      <div class="content">
+        <div class="title">${g.name}</div>
+        <div class="score">${(g.similarity_score*100).toFixed(1)}% match</div>
+
+        <p>${g.primary_genre || ""}</p>
+        <p>⭐ ${g.avg_sentiment_score || ""}</p>
+
+        ${g.ai_reason ? `<p><b>Why:</b> ${g.ai_reason}</p>` : ""}
+
+        <a href="${g.steam_url}" target="_blank">🎮 Open in Steam</a>
+      </div>
+    </div>
+  `).join("");
+}
+</script>
+
+</body>
+</html>
